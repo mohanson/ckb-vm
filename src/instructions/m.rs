@@ -3,7 +3,7 @@ use super::utils::{funct3, funct7, opcode, rd, rs1, rs2};
 use super::{Instruction, Rtype};
 use ckb_vm_definitions::instructions as insts;
 
-pub fn factory<R: Register>(instruction_bits: u32, _version: u32) -> Option<Instruction> {
+pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
     let bit_length = R::BITS;
     if bit_length != 32 && bit_length != 64 {
         return None;
@@ -34,13 +34,15 @@ pub fn factory<R: Register>(instruction_bits: u32, _version: u32) -> Option<Inst
         },
         _ => None,
     };
-    inst_opt.map(|inst| {
-        Rtype::new(
-            inst,
-            rd(instruction_bits),
-            rs1(instruction_bits),
-            rs2(instruction_bits),
-        )
-        .0
-    })
+    inst_opt
+        .map(|inst| {
+            Rtype::new(
+                inst,
+                rd(instruction_bits),
+                rs1(instruction_bits),
+                rs2(instruction_bits),
+            )
+            .0
+        })
+        .map(|e| e | 0x2000000)
 }

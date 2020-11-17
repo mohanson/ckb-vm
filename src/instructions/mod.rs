@@ -7,13 +7,13 @@ pub mod ast;
 pub mod b;
 pub mod i;
 pub mod m;
+pub mod mop;
 pub mod rvc;
 
 pub use self::register::Register;
 use super::Error;
 pub use ckb_vm_definitions::instructions::{
-    self as insts, Instruction, InstructionOpcode, INSTRUCTION_OPCODE_NAMES, MAXIMUM_RVC_OPCODE,
-    MINIMAL_RVC_OPCODE,
+    self as insts, instruction_opcode_name, Instruction, InstructionOpcode,
 };
 pub use execute::{execute, execute_instruction};
 
@@ -23,15 +23,15 @@ type UImmediate = u32;
 
 #[inline(always)]
 pub fn extract_opcode(i: Instruction) -> InstructionOpcode {
-    i as u8
+    (((i >> 8) & 0xff00) | (i & 0x00ff)) as u16
 }
 
-pub type InstructionFactory = fn(instruction_bits: u32, version: u32) -> Option<Instruction>;
+pub type InstructionFactory = fn(instruction_bits: u32) -> Option<Instruction>;
 
 // Blank instructions need no register indices nor immediates, they only have opcode
 // and module bit set.
 pub fn blank_instruction(op: InstructionOpcode) -> Instruction {
-    u64::from(op as u8)
+    (op as u64 >> 8 << 16) | (op as u64 & 0xff)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -45,7 +45,8 @@ impl Rtype {
         rs2: RegisterIndex,
     ) -> Self {
         Rtype(
-            u64::from(op as u8)
+            (u64::from(op) >> 8 << 16)
+                | u64::from(op as u8)
                 | (u64::from(rd as u8) << 8)
                 | (u64::from(rs1 as u8) << 32)
                 | (u64::from(rs2 as u8) << 40),
@@ -53,7 +54,7 @@ impl Rtype {
     }
 
     pub fn op(self) -> InstructionOpcode {
-        self.0 as u8 as InstructionOpcode
+        ((self.0 >> 16 << 8) | (self.0 & 0xFF)) as InstructionOpcode
     }
 
     pub fn rd(self) -> RegisterIndex {
@@ -80,6 +81,7 @@ impl Itype {
         immediate: UImmediate,
     ) -> Self {
         Itype(
+            (u64::from(op) >> 8 << 16) |
             u64::from(op as u8) |
               (u64::from(rd as u8) << 8) |
               (u64::from(rs1 as u8) << 32) |
@@ -99,7 +101,7 @@ impl Itype {
     }
 
     pub fn op(self) -> InstructionOpcode {
-        self.0 as u8 as InstructionOpcode
+        ((self.0 >> 16 << 8) | (self.0 & 0xFF)) as InstructionOpcode
     }
 
     pub fn rd(self) -> RegisterIndex {
@@ -130,6 +132,7 @@ impl Stype {
         rs2: RegisterIndex,
     ) -> Self {
         Stype(
+            (u64::from(op) >> 8 << 16) |
             u64::from(op as u8) |
               (u64::from(rs2 as u8) << 8) |
               (u64::from(rs1 as u8) << 32) |
@@ -149,7 +152,7 @@ impl Stype {
     }
 
     pub fn op(self) -> InstructionOpcode {
-        self.0 as u8 as InstructionOpcode
+        ((self.0 >> 16 << 8) | (self.0 & 0xFF)) as InstructionOpcode
     }
 
     pub fn rs1(self) -> RegisterIndex {
@@ -174,7 +177,12 @@ pub struct Utype(pub Instruction);
 
 impl Utype {
     pub fn new(op: InstructionOpcode, rd: RegisterIndex, immediate: UImmediate) -> Self {
-        Utype(u64::from(op as u8) | (u64::from(rd as u8) << 8) | (u64::from(immediate) << 32))
+        Utype(
+            (u64::from(op) >> 8 << 16)
+                | u64::from(op as u8)
+                | (u64::from(rd as u8) << 8)
+                | (u64::from(immediate) << 32),
+        )
     }
 
     pub fn new_s(op: InstructionOpcode, rd: RegisterIndex, immediate: Immediate) -> Self {
@@ -182,7 +190,7 @@ impl Utype {
     }
 
     pub fn op(self) -> InstructionOpcode {
-        self.0 as u8 as InstructionOpcode
+        ((self.0 >> 16 << 8) | (self.0 & 0xFF)) as InstructionOpcode
     }
 
     pub fn rd(self) -> RegisterIndex {
@@ -210,7 +218,8 @@ impl R4type {
         rs3: RegisterIndex,
     ) -> Self {
         R4type(
-            u64::from(op as u8)
+            (u64::from(op) >> 8 << 16)
+                | u64::from(op as u8)
                 | (u64::from(rd as u8) << 8)
                 | (u64::from(rs1 as u8) << 32)
                 | (u64::from(rs2 as u8) << 40)
@@ -219,7 +228,7 @@ impl R4type {
     }
 
     pub fn op(self) -> InstructionOpcode {
-        self.0 as u8 as InstructionOpcode
+        ((self.0 >> 16 << 8) | (self.0 & 0xFF)) as InstructionOpcode
     }
 
     pub fn rd(self) -> RegisterIndex {
@@ -240,46 +249,7 @@ impl R4type {
 }
 
 pub fn is_slowpath_instruction(i: Instruction) -> bool {
-    match extract_opcode(i) {
-        insts::OP_GREV => true,
-        insts::OP_GREVI => true,
-        insts::OP_GREVW => true,
-        insts::OP_GREVIW => true,
-        insts::OP_SHFL => true,
-        insts::OP_UNSHFL => true,
-        insts::OP_SHFLI => true,
-        insts::OP_UNSHFLI => true,
-        insts::OP_SHFLW => true,
-        insts::OP_UNSHFLW => true,
-        insts::OP_GORC => true,
-        insts::OP_GORCI => true,
-        insts::OP_GORCW => true,
-        insts::OP_GORCIW => true,
-        insts::OP_BFP => true,
-        insts::OP_BFPW => true,
-        insts::OP_BDEP => true,
-        insts::OP_BEXT => true,
-        insts::OP_BDEPW => true,
-        insts::OP_BEXTW => true,
-        insts::OP_CLMUL => true,
-        insts::OP_CLMULR => true,
-        insts::OP_CLMULH => true,
-        insts::OP_CLMULW => true,
-        insts::OP_CLMULRW => true,
-        insts::OP_CLMULHW => true,
-        insts::OP_CRC32B => true,
-        insts::OP_CRC32H => true,
-        insts::OP_CRC32W => true,
-        insts::OP_CRC32D => true,
-        insts::OP_CRC32CB => true,
-        insts::OP_CRC32CH => true,
-        insts::OP_CRC32CW => true,
-        insts::OP_CRC32CD => true,
-        insts::OP_BMATOR => true,
-        insts::OP_BMATXOR => true,
-        insts::OP_BMATFLIP => true,
-        _ => false,
-    }
+    i as u8 >= 0xF0
 }
 
 pub fn is_basic_block_end_instruction(i: Instruction) -> bool {
@@ -295,27 +265,15 @@ pub fn is_basic_block_end_instruction(i: Instruction) -> bool {
         insts::OP_ECALL => true,
         insts::OP_EBREAK => true,
         insts::OP_JAL => true,
-        insts::OP_RVC_EBREAK => true,
-        insts::OP_RVC_BEQZ => true,
-        insts::OP_RVC_BNEZ => true,
-        insts::OP_RVC_J => true,
-        insts::OP_RVC_JAL => true,
-        insts::OP_RVC_JALR => true,
-        insts::OP_RVC_JR => true,
-        insts::OP_VERSION1_JALR => true,
-        insts::OP_VERSION1_RVC_JALR => true,
+        insts::OP_FAR_JUMP_ABS => true,
+        insts::OP_FAR_JUMP_REL => true,
         _ => is_slowpath_instruction(i),
     }
 }
 
 #[inline(always)]
 pub fn instruction_length(i: Instruction) -> u8 {
-    let o = extract_opcode(i);
-    if o >= MINIMAL_RVC_OPCODE && o <= MAXIMUM_RVC_OPCODE {
-        2
-    } else {
-        4
-    }
+    (((i >> 24) & 0x0f) << 1) as u8
 }
 
 #[cfg(test)]
@@ -325,6 +283,6 @@ mod tests {
 
     #[test]
     fn test_instruction_op_should_fit_in_byte() {
-        assert_eq!(1, size_of::<InstructionOpcode>());
+        assert_eq!(2, size_of::<InstructionOpcode>());
     }
 }

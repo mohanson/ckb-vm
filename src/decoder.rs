@@ -5,16 +5,12 @@ use super::ISA_B;
 
 #[derive(Default)]
 pub struct Decoder {
-    version: u32,
     factories: Vec<InstructionFactory>,
 }
 
 impl Decoder {
-    pub fn new(version: u32) -> Decoder {
-        Decoder {
-            version,
-            factories: vec![],
-        }
+    pub fn new() -> Decoder {
+        Decoder { factories: vec![] }
     }
 
     pub fn add_instruction_factory(&mut self, factory: InstructionFactory) {
@@ -74,7 +70,7 @@ impl Decoder {
     ) -> Result<Instruction, Error> {
         let instruction_bits = self.decode_bits(memory, pc)?;
         for factory in &self.factories {
-            if let Some(instruction) = factory(instruction_bits, self.version) {
+            if let Some(instruction) = factory(instruction_bits) {
                 return Ok(instruction);
             }
         }
@@ -82,8 +78,8 @@ impl Decoder {
     }
 }
 
-pub fn build_decoder<R: Register>(isa: u8, version: u32) -> Decoder {
-    let mut decoder = Decoder::new(version);
+pub fn build_decoder<R: Register>(isa: u8) -> Decoder {
+    let mut decoder = Decoder::new();
     decoder.add_instruction_factory(rvc::factory::<R>);
     decoder.add_instruction_factory(i::factory::<R>);
     decoder.add_instruction_factory(m::factory::<R>);

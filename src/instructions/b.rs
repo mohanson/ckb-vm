@@ -6,13 +6,13 @@ use super::Register;
 use super::{Instruction, Itype, R4type, Rtype};
 use ckb_vm_definitions::instructions as insts;
 
-pub fn factory<R: Register>(instruction_bits: u32, _: u32) -> Option<Instruction> {
+pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
     let bit_length = R::BITS;
     if bit_length != 32 && bit_length != 64 {
         return None;
     }
     let funct3_value = funct3(instruction_bits);
-    match opcode(instruction_bits) {
+    let inst = (|| match opcode(instruction_bits) {
         0b_0110011 => {
             let funct7_value = funct7(instruction_bits);
             let funct2_value = funct7_value & 0x3;
@@ -348,5 +348,6 @@ pub fn factory<R: Register>(instruction_bits: u32, _: u32) -> Option<Instruction
             })
         }
         _ => None,
-    }
+    })();
+    inst.map(|e| e | 0x2000000)
 }

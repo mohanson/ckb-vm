@@ -512,7 +512,7 @@ impl<'a, Inner: SupportMachine> DefaultMachine<'a, Inner> {
     // not be practical in production, but it serves as a baseline and
     // reference implementation
     pub fn run(&mut self) -> Result<i8, Error> {
-        let decoder = build_decoder::<Inner::REG>(self.isa(), self.version());
+        let decoder = build_decoder::<Inner::REG>(self.isa());
         self.set_running(true);
         while self.running() {
             self.step(&decoder)?;
