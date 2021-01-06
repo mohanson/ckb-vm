@@ -1,5 +1,5 @@
 // RISC-V Bitmanip (Bit Manipulation) Extension
-// https://github.com/riscv/riscv-bitmanip
+// See https://github.com/riscv/riscv-bitmanip/blob/master/bitmanip-0.92.pdf
 
 use super::utils::{self, funct3, funct7, itype_immediate, opcode, rd, rs1, rs2, rs3};
 use super::Register;
