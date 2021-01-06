@@ -13,7 +13,7 @@ use super::memory::{
 use super::syscalls::Syscalls;
 use super::{
     registers::{A0, A7, REGISTER_ABI_NAMES, SP},
-    Error, DEFAULT_STACK_SIZE, ISA_B, ISA_IMAC, RISCV_GENERAL_REGISTER_NUMBER, RISCV_MAX_MEMORY,
+    Error, DEFAULT_STACK_SIZE, ISA_B, ISA_IMC, RISCV_GENERAL_REGISTER_NUMBER, RISCV_MAX_MEMORY,
     RISCV_PAGES,
 };
 use bytes::Bytes;
@@ -317,7 +317,7 @@ impl<R: Register, M: Memory<R> + Default> DefaultCoreMachine<R, M> {
 
     pub fn latest() -> Self {
         Self {
-            isa: ISA_IMAC | ISA_B,
+            isa: ISA_IMC | ISA_B,
             version: VERSION1,
             ..Default::default()
         }

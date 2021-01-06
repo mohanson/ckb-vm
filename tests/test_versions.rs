@@ -10,7 +10,7 @@ use ckb_vm::{
         VERSION0, VERSION1,
     },
     DefaultCoreMachine, DefaultMachine, DefaultMachineBuilder, Error, SparseMemory, WXorXMemory,
-    ISA_IMAC,
+    ISA_IMC,
 };
 use std::fs::File;
 use std::io::Read;
@@ -26,7 +26,7 @@ fn create_rust_machine<'a>(
     file.read_to_end(&mut buffer).unwrap();
     let buffer: Bytes = buffer.into();
 
-    let core_machine = DefaultCoreMachine::<u64, Mem>::new(ISA_IMAC, version, u64::max_value());
+    let core_machine = DefaultCoreMachine::<u64, Mem>::new(ISA_IMC, version, u64::max_value());
     let mut machine =
         DefaultMachineBuilder::<DefaultCoreMachine<u64, Mem>>::new(core_machine).build();
     machine
@@ -41,7 +41,7 @@ fn create_asm_machine<'a>(program: String, version: u32) -> AsmMachine<'a> {
     file.read_to_end(&mut buffer).unwrap();
     let buffer: Bytes = buffer.into();
 
-    let asm_core = AsmCoreMachine::new(ISA_IMAC, version, u64::max_value());
+    let asm_core = AsmCoreMachine::new(ISA_IMC, version, u64::max_value());
     let core = DefaultMachineBuilder::<Box<AsmCoreMachine>>::new(asm_core).build();
     let mut machine = AsmMachine::new(core, None);
     machine
@@ -57,7 +57,7 @@ fn compile_aot_code(program: String, version: u32) -> AotCode {
     let buffer: Bytes = buffer.into();
 
     let mut aot_machine =
-        AotCompilingMachine::load(&buffer.clone(), None, ISA_IMAC, version).unwrap();
+        AotCompilingMachine::load(&buffer.clone(), None, ISA_IMC, version).unwrap();
     aot_machine.compile().unwrap()
 }
 
@@ -67,7 +67,7 @@ fn create_aot_machine<'a>(program: String, code: &'a AotCode, version: u32) -> A
     file.read_to_end(&mut buffer).unwrap();
     let buffer: Bytes = buffer.into();
 
-    let asm_core = AsmCoreMachine::new(ISA_IMAC, version, u64::max_value());
+    let asm_core = AsmCoreMachine::new(ISA_IMC, version, u64::max_value());
     let core = DefaultMachineBuilder::<Box<AsmCoreMachine>>::new(asm_core).build();
     let mut machine = AsmMachine::new(core, Some(code));
     machine
@@ -384,7 +384,7 @@ pub fn test_rust_version0_unaligned64() {
     file.read_to_end(&mut buffer).unwrap();
     let buffer: Bytes = buffer.into();
 
-    let core_machine = DefaultCoreMachine::<u64, Mem>::new(ISA_IMAC, VERSION0, u64::max_value());
+    let core_machine = DefaultCoreMachine::<u64, Mem>::new(ISA_IMC, VERSION0, u64::max_value());
     let mut machine =
         DefaultMachineBuilder::<DefaultCoreMachine<u64, Mem>>::new(core_machine).build();
     let result = machine.load_program(&buffer, &vec![program.into()]);
@@ -408,7 +408,7 @@ pub fn test_asm_version0_unaligned64() {
     file.read_to_end(&mut buffer).unwrap();
     let buffer: Bytes = buffer.into();
 
-    let asm_core = AsmCoreMachine::new(ISA_IMAC, VERSION0, u64::max_value());
+    let asm_core = AsmCoreMachine::new(ISA_IMC, VERSION0, u64::max_value());
     let core = DefaultMachineBuilder::<Box<AsmCoreMachine>>::new(asm_core).build();
     let mut machine = AsmMachine::new(core, None);
     let result = machine.load_program(&buffer, &vec![program.into()]);
@@ -433,7 +433,7 @@ pub fn test_aot_version0_unaligned64() {
     file.read_to_end(&mut buffer).unwrap();
     let buffer: Bytes = buffer.into();
 
-    let asm_core = AsmCoreMachine::new(ISA_IMAC, VERSION0, u64::max_value());
+    let asm_core = AsmCoreMachine::new(ISA_IMC, VERSION0, u64::max_value());
     let core = DefaultMachineBuilder::<Box<AsmCoreMachine>>::new(asm_core).build();
     let mut machine = AsmMachine::new(core, Some(&code));
     let result = machine.load_program(&buffer, &vec![program.into()]);

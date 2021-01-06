@@ -5,7 +5,7 @@ use ckb_vm::{
         asm::{AsmCoreMachine, AsmMachine},
         VERSION1,
     },
-    DefaultMachineBuilder, ISA_B, ISA_IMAC,
+    DefaultMachineBuilder, ISA_B, ISA_IMC,
 };
 use ckb_vm::{run, SparseMemory};
 
@@ -21,7 +21,7 @@ pub fn test_b_extension_asm() {
     file.read_to_end(&mut buffer).unwrap();
     let buffer = Bytes::from(buffer);
 
-    let asm_core = AsmCoreMachine::new(ISA_IMAC | ISA_B, VERSION1, u64::max_value());
+    let asm_core = AsmCoreMachine::new(ISA_IMC | ISA_B, VERSION1, u64::max_value());
     let core = DefaultMachineBuilder::<Box<AsmCoreMachine>>::new(asm_core).build();
     let mut machine = AsmMachine::new(core, None);
 
@@ -41,10 +41,10 @@ pub fn test_b_extension_aot() {
     file.read_to_end(&mut buffer).unwrap();
     let buffer: Bytes = buffer.into();
 
-    let asm_core = AsmCoreMachine::new(ISA_IMAC | ISA_B, VERSION1, u64::max_value());
+    let asm_core = AsmCoreMachine::new(ISA_IMC | ISA_B, VERSION1, u64::max_value());
     let core = DefaultMachineBuilder::<Box<AsmCoreMachine>>::new(asm_core).build();
     let mut aot_machine =
-        AotCompilingMachine::load(&buffer, None, ISA_IMAC | ISA_B, VERSION1).unwrap();
+        AotCompilingMachine::load(&buffer, None, ISA_IMC | ISA_B, VERSION1).unwrap();
     let code = aot_machine.compile().unwrap();
     let mut machine = AsmMachine::new(core, Some(&code));
 
