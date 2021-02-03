@@ -1368,7 +1368,7 @@ ckb_vm_x64_execute:
   cmp $0, RS1d
   je .clzw_branch
   bsr RS1d, RS1d
-  neg RS1d
+  neg RS1
   addq $31, RS1
   WRITE_RD(RS1)
   NEXT_INST
