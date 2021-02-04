@@ -847,9 +847,10 @@ pub fn execute_instruction<Mac: Machine>(
             let i = Rtype(inst);
             let rs1_value = &machine.registers()[i.rs1()];
             let rs2_value = &machine.registers()[i.rs2()];
-            let upper = rs2_value.clone() & Mac::REG::from_u32(0xffff_0000);
-            let lower = rs1_value.zero_extend(&Mac::REG::from_u8(32)) >> Mac::REG::from_u8(16);
-            let value = (upper | lower).sign_extend(&Mac::REG::from_u8(32));
+            let upper = rs2_value.sign_extend(&Mac::REG::from_u8(32))
+                & Mac::REG::from_u64(0xffff_ffff_ffff_0000);
+            let lower = rs1_value.clone() << Mac::REG::from_u8(32) >> Mac::REG::from_u8(48);
+            let value = upper | lower;
             update_register(machine, i.rd(), value);
             None
         }
