@@ -17,3 +17,12 @@ pub fn test_clzw_bug() {
     #[cfg(has_asm)]
     machine_run::aot_v1_imcb("tests/programs/clzw_bug");
 }
+
+#[test]
+pub fn test_packw_signextend() {
+    machine_run::int_v1_imcb("tests/programs/packw_signextend");
+    #[cfg(has_asm)]
+    machine_run::asm_v1_imcb("tests/programs/packw_signextend");
+    #[cfg(has_asm)]
+    machine_run::aot_v1_imcb("tests/programs/packw_signextend");
+}

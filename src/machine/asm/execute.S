@@ -1482,6 +1482,7 @@ ckb_vm_x64_execute:
   shr $16, RS1d
   shl $16, RS2rd
   or RS2rd, RS1d
+  movslq RS1d, RS1
   WRITE_RD(RS1)
   NEXT_INST
 .p2align 3
@@ -1493,6 +1494,7 @@ ckb_vm_x64_execute:
   shr $16, RS2rd
   shl $16, RS2rd
   or RS2rd, RS1d
+  movslq RS1d, RS1
   WRITE_RD(RS1)
   NEXT_INST
 .p2align 3
