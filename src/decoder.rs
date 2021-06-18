@@ -627,7 +627,7 @@ impl Decoder {
         }
     }
 
-    pub fn decode<M: Memory>(&self, memory: &mut M, pc: u64) -> Result<Instruction, Error> {
+    pub fn decode<M: Memory>(&mut self, memory: &mut M, pc: u64) -> Result<Instruction, Error> {
         if self.mop {
             self.decode_mop(memory, pc)
         } else {
