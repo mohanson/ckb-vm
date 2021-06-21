@@ -30,16 +30,16 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
                         (0b_010, 0b_0010000) => Some(insts::OP_SH1ADD),
                         (0b_100, 0b_0010000) => Some(insts::OP_SH2ADD),
                         (0b_110, 0b_0010000) => Some(insts::OP_SH3ADD),
-                        (0b_001, 0b_0100100) => Some(insts::OP_SBCLR),
-                        (0b_001, 0b_0010100) => Some(insts::OP_SBSET),
-                        (0b_001, 0b_0110100) => Some(insts::OP_SBINV),
-                        (0b_101, 0b_0100100) => Some(insts::OP_SBEXT),
+                        (0b_001, 0b_0100100) => Some(insts::OP_BCLR),
+                        (0b_001, 0b_0010100) => Some(insts::OP_BSET),
+                        (0b_001, 0b_0110100) => Some(insts::OP_BINV),
+                        (0b_101, 0b_0100100) => Some(insts::OP_BEXT),
                         (0b_101, 0b_0010100) => Some(insts::OP_GORC),
                         (0b_101, 0b_0110100) => Some(insts::OP_GREV),
                         (0b_001, 0b_0000100) => Some(insts::OP_SHFL),
                         (0b_101, 0b_0000100) => Some(insts::OP_UNSHFL),
                         (0b_110, 0b_0100100) => Some(insts::OP_BDEP),
-                        (0b_110, 0b_0000100) => Some(insts::OP_BEXT),
+                        (0b_110, 0b_0000100) => Some(insts::OP_BEXT_DELETE),
                         (0b_100, 0b_0000100) => Some(insts::OP_PACK),
                         (0b_100, 0b_0100100) => Some(insts::OP_PACKU),
                         (0b_011, 0b_0000100) => Some(insts::OP_BMATOR),
@@ -118,13 +118,36 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
         }
         0b_0010011 => {
             let top12_value = instruction_bits >> 20;
+            if top12_value == 0b_001010000111 && funct3_value == 0b_101 {
+                // return Some(
+                //     Rtype::new(
+                //         insts::OP_ORCB,
+                //         rd(instruction_bits),
+                //         rs1(instruction_bits),
+                //         0b_10100,
+                //     )
+                //     .0,
+                // );
+            }
+            if top12_value == 0b_011010111000 && funct3_value == 0b_101 {
+                // RV32  0b_011010011000
+                // return Some(
+                //     Rtype::new(
+                //         insts::OP_REV8,
+                //         rd(instruction_bits),
+                //         rs1(instruction_bits),
+                //         0b_11000,
+                //     )
+                //     .0,
+                // );
+            }
             let top7_value = top12_value >> 5;
             if top7_value == 0b_0110000 {
                 let rs2_value = rs2(instruction_bits);
                 let inst_opt = match (funct3_value, rs2_value) {
                     (0b_001, 0b_00000) => Some(insts::OP_CLZ),
                     (0b_001, 0b_00001) => Some(insts::OP_CTZ),
-                    (0b_001, 0b_00010) => Some(insts::OP_PCNT),
+                    (0b_001, 0b_00010) => Some(insts::OP_CPOP),
                     (0b_001, 0b_00011) => Some(insts::OP_BMATFLIP),
                     (0b_001, 0b_00100) => Some(insts::OP_SEXTB),
                     (0b_001, 0b_00101) => Some(insts::OP_SEXTH),
@@ -177,10 +200,10 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
                     (0b_001, 0b_00100) => Some(insts::OP_SLOI),
                     (0b_101, 0b_00100) => Some(insts::OP_SROI),
                     (0b_101, 0b_01100) => Some(insts::OP_RORI),
-                    (0b_001, 0b_01001) => Some(insts::OP_SBCLRI),
-                    (0b_001, 0b_00101) => Some(insts::OP_SBSETI),
-                    (0b_001, 0b_01101) => Some(insts::OP_SBINVI),
-                    (0b_101, 0b_01001) => Some(insts::OP_SBEXTI),
+                    (0b_001, 0b_01001) => Some(insts::OP_BCLRI),
+                    (0b_001, 0b_00101) => Some(insts::OP_BSETI),
+                    (0b_001, 0b_01101) => Some(insts::OP_BINVI),
+                    (0b_101, 0b_01001) => Some(insts::OP_BEXTI),
                     (0b_101, 0b_00101) => Some(insts::OP_GORCI),
                     (0b_101, 0b_01101) => Some(insts::OP_GREVI),
                     _ => None,
@@ -215,7 +238,7 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
                     let inst_opt = match rs2(instruction_bits) {
                         0b_00000 => Some(insts::OP_CLZW),
                         0b_00001 => Some(insts::OP_CTZW),
-                        0b_00010 => Some(insts::OP_PCNTW),
+                        0b_00010 => Some(insts::OP_CPOPW),
                         _ => None,
                     };
                     return inst_opt.map(|inst| {
@@ -331,8 +354,14 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
                 (0b_001, 0b_0000100) => Some(insts::OP_SHFLW),
                 (0b_101, 0b_0000100) => Some(insts::OP_UNSHFLW),
                 (0b_110, 0b_0100100) => Some(insts::OP_BDEPW),
-                (0b_110, 0b_0000100) => Some(insts::OP_BEXTW),
-                (0b_100, 0b_0000100) => Some(insts::OP_PACKW),
+                (0b_110, 0b_0000100) => Some(insts::OP_BEXTW_DELETE),
+                (0b_100, 0b_0000100) => {
+                    if rs2(instruction_bits) == 0 {
+                        Some(insts::OP_ZEXTH)
+                    } else {
+                        Some(insts::OP_PACKW)
+                    }
+                }
                 (0b_100, 0b_0100100) => Some(insts::OP_PACKUW),
                 (0b_111, 0b_0100100) => Some(insts::OP_BFPW),
                 _ => None,
