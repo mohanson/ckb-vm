@@ -1333,6 +1333,72 @@ ckb_vm_x64_execute:
   WRITE_RD(RS1)
   NEXT_INST
 .p2align 3
+.CKB_VM_ASM_LABEL_OP_CLMUL:
+  DECODE_R
+  movq REGISTER_ADDRESS(RS1), RS1
+  movq REGISTER_ADDRESS(RS2r), RS2r
+  xor %ecx, %ecx
+  xor TEMP3, TEMP3
+.clmul_branch:
+  movq RS1, TEMP1
+  movq RS2r, TEMP2
+  shl %cl, TEMP1
+  shr %cl, TEMP2
+  xor TEMP3, TEMP1
+  and $1, TEMP2
+  cmovne TEMP1, TEMP3
+  add $1, %rcx
+  cmp $64, %rcx
+  jne .clmul_branch
+  WRITE_RD(TEMP3)
+  NEXT_INST
+.p2align 3
+.CKB_VM_ASM_LABEL_OP_CLMULH:
+  DECODE_R
+  movq REGISTER_ADDRESS(RS1), RS1
+  movq REGISTER_ADDRESS(RS2r), RS2r
+  movq $1, RS3
+  xor TEMP3, TEMP3
+.clmulh_branch:
+  movq RS1, TEMP1
+  movq RS2r, TEMP2
+  movq $64, %rcx
+  subq RS3, %rcx
+  shr %cl, TEMP1
+  movq RS3, %rcx
+  shr %cl, TEMP2
+  xor TEMP3, TEMP1
+  and $1, TEMP2
+  cmovne TEMP1, TEMP3
+  add $1, RS3
+  cmp $64, RS3
+  jne .clmulh_branch
+  WRITE_RD(TEMP3)
+  NEXT_INST
+.p2align 3
+.CKB_VM_ASM_LABEL_OP_CLMULR:
+  DECODE_R
+  movq REGISTER_ADDRESS(RS1), RS1
+  movq REGISTER_ADDRESS(RS2r), RS2r
+  xor RS3, RS3
+  xor TEMP3, TEMP3
+.clmulr_branch:
+  movq RS1, TEMP1
+  movq RS2r, TEMP2
+  movq $63, %rcx
+  subq RS3, %rcx
+  shr %cl, TEMP1
+  movq RS3, %rcx
+  shr %cl, TEMP2
+  xor TEMP3, TEMP1
+  and $1, TEMP2
+  cmovne TEMP1, TEMP3
+  add $1, RS3
+  cmp $64, RS3
+  jne .clmulr_branch
+  WRITE_RD(TEMP3)
+  NEXT_INST
+.p2align 3
 .CKB_VM_ASM_LABEL_OP_CLZ:
   DECODE_R
   movq REGISTER_ADDRESS(RS1), RS1

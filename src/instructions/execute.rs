@@ -1109,14 +1109,58 @@ pub fn execute_instruction<Mac: Machine>(
         }
         insts::OP_CLMUL => {
             let i = Rtype(inst);
+            update_register(machine, i.rd(), Mac::REG::zero());
+            for s in 0..Mac::REG::BITS {
+                let shamt = Mac::REG::from_u8(s);
+                let rs1_value = &machine.registers()[i.rs1()];
+                let rs2_value = &machine.registers()[i.rs2()];
+                let rd_value = &machine.registers()[i.rd()];
+                let cond = (rs2_value.clone() >> shamt.clone()) & Mac::REG::one();
+                let branch_1 = rd_value.clone() ^ (rs1_value.clone() << shamt);
+                let branch_0 = rd_value.clone();
+                let value = cond.cond(&branch_1, &branch_0);
+                update_register(machine, i.rd(), value);
+            }
+        }
+        insts::OP_CLMULH => {
+            let i = Rtype(inst);
+            update_register(machine, i.rd(), Mac::REG::zero());
+            for s in 1..Mac::REG::BITS {
+                let shamt = Mac::REG::from_u8(s);
+                let rs1_value = &machine.registers()[i.rs1()];
+                let rs2_value = &machine.registers()[i.rs2()];
+                let rd_value = &machine.registers()[i.rd()];
+                let cond = (rs2_value.clone() >> shamt.clone()) & Mac::REG::one();
+                let branch_1 = rd_value.clone()
+                    ^ (rs1_value.clone()
+                        >> Mac::REG::from_u8(Mac::REG::BITS).overflowing_sub(&shamt));
+                let branch_0 = rd_value.clone();
+                let value = cond.cond(&branch_1, &branch_0);
+                update_register(machine, i.rd(), value);
+            }
+        }
+        insts::OP_CLMULR => {
+            // let i = Rtype(inst);
+            // update_register(machine, i.rd(), Mac::REG::zero());
+            // for s in 0..Mac::REG::BITS {
+            //     let shamt = Mac::REG::from_u8(s);
+            //     let rs1_value = &machine.registers()[i.rs1()];
+            //     let rs2_value = &machine.registers()[i.rs2()];
+            //     let rd_value = &machine.registers()[i.rd()];
+            //     let cond = (rs2_value.clone() >> shamt.clone()) & Mac::REG::one();
+            //     let branch_1 = rd_value.clone()
+            //         ^ (rs1_value.clone()
+            //             >> Mac::REG::from_u8(Mac::REG::BITS - 1).overflowing_sub(&shamt));
+            //     let branch_0 = rd_value.clone();
+            //     let value = cond.cond(&branch_1, &branch_0);
+            //     update_register(machine, i.rd(), value);
+            // }
+            let i = Rtype(inst);
             let rs1_value = &machine.registers()[i.rs1()];
             let rs2_value = &machine.registers()[i.rs2()];
-            let value = if Mac::REG::BITS == 32 {
-                Mac::REG::from_u32(common::clmul32(rs1_value.to_u32(), rs2_value.to_u32()))
-            } else {
-                Mac::REG::from_u64(common::clmul64(rs1_value.to_u64(), rs2_value.to_u64()))
-            };
-            update_register(machine, i.rd(), value);
+            let value = common::clmulr64(rs1_value.to_u64(), rs2_value.to_u64());
+            let r = Mac::REG::from_u64(value);
+            update_register(machine, i.rd(), r);
         }
         insts::OP_CLMULW => {
             let i = Rtype(inst);
@@ -1126,17 +1170,6 @@ pub fn execute_instruction<Mac: Machine>(
             let r = Mac::REG::from_u32(value).sign_extend(&Mac::REG::from_u8(32));
             update_register(machine, i.rd(), r);
         }
-        insts::OP_CLMULH => {
-            let i = Rtype(inst);
-            let rs1_value = &machine.registers()[i.rs1()];
-            let rs2_value = &machine.registers()[i.rs2()];
-            let value = if Mac::REG::BITS == 32 {
-                Mac::REG::from_u32(common::clmulh32(rs1_value.to_u32(), rs2_value.to_u32()))
-            } else {
-                Mac::REG::from_u64(common::clmulh64(rs1_value.to_u64(), rs2_value.to_u64()))
-            };
-            update_register(machine, i.rd(), value);
-        }
         insts::OP_CLMULHW => {
             let i = Rtype(inst);
             let rs1_value = machine.registers()[i.rs1()].to_u32();
@@ -1144,17 +1177,6 @@ pub fn execute_instruction<Mac: Machine>(
             let value = common::clmulh32(rs1_value.to_u32(), rs2_value.to_u32());
             let r = Mac::REG::from_u32(value).sign_extend(&Mac::REG::from_u8(32));
             update_register(machine, i.rd(), r);
-        }
-        insts::OP_CLMULR => {
-            let i = Rtype(inst);
-            let rs1_value = &machine.registers()[i.rs1()];
-            let rs2_value = &machine.registers()[i.rs2()];
-            let value = if Mac::REG::BITS == 32 {
-                Mac::REG::from_u32(common::clmulr32(rs1_value.to_u32(), rs2_value.to_u32()))
-            } else {
-                Mac::REG::from_u64(common::clmulr64(rs1_value.to_u64(), rs2_value.to_u64()))
-            };
-            update_register(machine, i.rd(), value);
         }
         insts::OP_CLMULRW => {
             let i = Rtype(inst);
