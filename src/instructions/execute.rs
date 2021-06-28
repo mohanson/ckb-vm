@@ -555,13 +555,13 @@ pub fn execute_instruction<Mac: Machine>(
         insts::OP_CPOP => {
             let i = Rtype(inst);
             let rs1_value = &machine.registers()[i.rs1()];
-            let value = rs1_value.pcnt();
+            let value = rs1_value.cpop();
             update_register(machine, i.rd(), value);
         }
         insts::OP_CPOPW => {
             let i = Rtype(inst);
             let rs1_value = &machine.registers()[i.rs1()];
-            let value = rs1_value.zero_extend(&Mac::REG::from_u8(32)).pcnt();
+            let value = rs1_value.zero_extend(&Mac::REG::from_u8(32)).cpop();
             update_register(machine, i.rd(), value);
         }
         insts::OP_CTZ => {
@@ -1140,27 +1140,11 @@ pub fn execute_instruction<Mac: Machine>(
             }
         }
         insts::OP_CLMULR => {
-            // let i = Rtype(inst);
-            // update_register(machine, i.rd(), Mac::REG::zero());
-            // for s in 0..Mac::REG::BITS {
-            //     let shamt = Mac::REG::from_u8(s);
-            //     let rs1_value = &machine.registers()[i.rs1()];
-            //     let rs2_value = &machine.registers()[i.rs2()];
-            //     let rd_value = &machine.registers()[i.rd()];
-            //     let cond = (rs2_value.clone() >> shamt.clone()) & Mac::REG::one();
-            //     let branch_1 = rd_value.clone()
-            //         ^ (rs1_value.clone()
-            //             >> Mac::REG::from_u8(Mac::REG::BITS - 1).overflowing_sub(&shamt));
-            //     let branch_0 = rd_value.clone();
-            //     let value = cond.cond(&branch_1, &branch_0);
-            //     update_register(machine, i.rd(), value);
-            // }
             let i = Rtype(inst);
             let rs1_value = &machine.registers()[i.rs1()];
             let rs2_value = &machine.registers()[i.rs2()];
-            let value = common::clmulr64(rs1_value.to_u64(), rs2_value.to_u64());
-            let r = Mac::REG::from_u64(value);
-            update_register(machine, i.rd(), r);
+            let value = rs1_value.clmulr(rs2_value);
+            update_register(machine, i.rd(), value);
         }
         insts::OP_CLMULW => {
             let i = Rtype(inst);

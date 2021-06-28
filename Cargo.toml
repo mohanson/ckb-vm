@@ -8,7 +8,7 @@ edition = "2018"
 build = "build.rs"
 
 [features]
-default = []
+default = ["detect-asm"]
 # Require asm feature, generates an error if asm cannot be enabled.
 asm = []
 # Detect if requirements are met, and enable asm feature when we can.
