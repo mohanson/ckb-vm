@@ -538,16 +538,6 @@ pub fn clmul32(rs1: u32, rs2: u32) -> u32 {
     x
 }
 
-pub fn clmul64(rs1: u64, rs2: u64) -> u64 {
-    let mut x: u64 = 0;
-    for i in 0..64 {
-        if ((rs2 >> i) & 1) != 0 {
-            x ^= rs1 << i;
-        }
-    }
-    x
-}
-
 pub fn clmulh32(rs1: u32, rs2: u32) -> u32 {
     let mut x: u32 = 0;
     for i in 1..32 {
@@ -558,31 +548,11 @@ pub fn clmulh32(rs1: u32, rs2: u32) -> u32 {
     x
 }
 
-pub fn clmulh64(rs1: u64, rs2: u64) -> u64 {
-    let mut x: u64 = 0;
-    for i in 1..64 {
-        if ((rs2 >> i) & 1) != 0 {
-            x ^= rs1 >> (64 - i);
-        }
-    }
-    x
-}
-
 pub fn clmulr32(rs1: u32, rs2: u32) -> u32 {
     let mut x: u32 = 0;
     for i in 0..32 {
         if ((rs2 >> i) & 1) != 0 {
             x ^= rs1 >> (31 - i);
-        }
-    }
-    x
-}
-
-pub fn clmulr64(rs1: u64, rs2: u64) -> u64 {
-    let mut x: u64 = 0;
-    for i in 0..64 {
-        if ((rs2 >> i) & 1) != 0 {
-            x ^= rs1 >> (63 - i);
         }
     }
     x

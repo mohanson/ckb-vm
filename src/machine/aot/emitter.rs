@@ -409,7 +409,7 @@ impl Emitter {
                         aot_eq(self.aot, target_register as u32, a_value, b_value)
                     },
                     ActionOp2::Clmul => unsafe {
-                        aot_rol(self.aot, target_register as u32, a_value, b_value)
+                        aot_clmul(self.aot, target_register as u32, a_value, b_value)
                     },
                     ActionOp2::Clmulh => unsafe {
                         aot_clmulh(self.aot, target_register as u32, a_value, b_value)

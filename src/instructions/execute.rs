@@ -1109,18 +1109,10 @@ pub fn execute_instruction<Mac: Machine>(
         }
         insts::OP_CLMUL => {
             let i = Rtype(inst);
-            update_register(machine, i.rd(), Mac::REG::zero());
-            for s in 0..Mac::REG::BITS {
-                let shamt = Mac::REG::from_u8(s);
-                let rs1_value = &machine.registers()[i.rs1()];
-                let rs2_value = &machine.registers()[i.rs2()];
-                let rd_value = &machine.registers()[i.rd()];
-                let cond = (rs2_value.clone() >> shamt.clone()) & Mac::REG::one();
-                let branch_1 = rd_value.clone() ^ (rs1_value.clone() << shamt);
-                let branch_0 = rd_value.clone();
-                let value = cond.cond(&branch_1, &branch_0);
-                update_register(machine, i.rd(), value);
-            }
+            let rs1_value = &machine.registers()[i.rs1()];
+            let rs2_value = &machine.registers()[i.rs2()];
+            let value = rs1_value.clmul(rs2_value);
+            update_register(machine, i.rd(), value);
         }
         insts::OP_CLMULH => {
             let i = Rtype(inst);

@@ -1061,7 +1061,30 @@ int aot_shr(AotContext* context, riscv_register_t target, AotValue a, AotValue b
   return DASM_S_OK;
 }
 
-int aot_clmul(AotContext* context, riscv_register_t target, AotValue a, AotValue b) { return 0; }
+int aot_clmul(AotContext* context, riscv_register_t target, AotValue a, AotValue b) {
+  int ret;
+  uint32_t loc1;
+  dasm_State** Dst = &context->d;
+
+  | xor ecx, ecx
+  | xor r10, r10
+  |1:
+  ret = aot_mov_x64(context, X64_RAX, a);
+  if (ret != DASM_S_OK) { return ret; }
+  ret = aot_mov_x64(context, X64_RDX, b);
+  if (ret != DASM_S_OK) { return ret; }
+  | shl rax, cl
+  | shr rdx, cl
+  | xor rax, r10
+  | and rdx, 1
+  | cmovne r10, rax
+  | add rcx, 1
+  | cmp rcx, 64
+  | jne <1
+  | op2_r_x mov, target, r10
+
+  return DASM_S_OK;
+}
 
 int aot_clmulh(AotContext* context, riscv_register_t target, AotValue a, AotValue b) {
   int ret;

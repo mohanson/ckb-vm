@@ -291,9 +291,13 @@ impl Register for Value {
 
     fn clmul(&self, rhs: &Value) -> Value {
         if let (Value::Imm(imm1), Value::Imm(imm2)) = (self, rhs) {
-            return Value::Imm(imm1.rotate_left(*imm2 as u32));
+            return Value::Imm(imm1.clmul(imm2));
         }
-        Value::Op2(ActionOp2::Rol, Rc::new(self.clone()), Rc::new(rhs.clone()))
+        Value::Op2(
+            ActionOp2::Clmul,
+            Rc::new(self.clone()),
+            Rc::new(rhs.clone()),
+        )
     }
 
     fn clmulh(&self, rhs: &Value) -> Value {
