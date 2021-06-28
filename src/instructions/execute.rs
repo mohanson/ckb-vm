@@ -605,7 +605,10 @@ pub fn execute_instruction<Mac: Machine>(
             update_register(machine, i.rd(), value);
         }
         insts::OP_ORCB => {
-            unimplemented!();
+            let i = Rtype(inst);
+            let rs1_value = &machine.registers()[i.rs1()];
+            let value = rs1_value.orcb();
+            update_register(machine, i.rd(), value);
         }
         insts::OP_ORN => {
             let i = Rtype(inst);
@@ -615,7 +618,10 @@ pub fn execute_instruction<Mac: Machine>(
             update_register(machine, i.rd(), value);
         }
         insts::OP_REV8 => {
-            unimplemented!();
+            let i = Rtype(inst);
+            let rs1_value = &machine.registers()[i.rs1()];
+            let value = rs1_value.rev8();
+            update_register(machine, i.rd(), value);
         }
         insts::OP_ROL => {
             let i = Rtype(inst);

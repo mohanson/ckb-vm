@@ -1571,6 +1571,58 @@ ckb_vm_x64_execute:
   NEXT_INST
 .p2align 3
 .CKB_VM_ASM_LABEL_OP_ORCB:
+  DECODE_R
+  movq REGISTER_ADDRESS(RS1), RS1
+  xor RS2r, RS2r
+  movq $0x00000000000000ff, TEMP1
+  movq TEMP1, TEMP2
+  andq RS1, TEMP1
+  je .orcb_branch1
+  orq TEMP2, RS2r
+.orcb_branch1:
+  movq $0x000000000000ff00, TEMP1
+  movq TEMP1, TEMP2
+  andq RS1, TEMP1
+  je .orcb_branch2
+  orq TEMP2, RS2r
+.orcb_branch2:
+  movq $0x0000000000ff0000, TEMP1
+  movq TEMP1, TEMP2
+  andq RS1, TEMP1
+  je .orcb_branch3
+  orq TEMP2, RS2r
+.orcb_branch3:
+  movq $0x00000000ff000000, TEMP1
+  movq TEMP1, TEMP2
+  andq RS1, TEMP1
+  je .orcb_branch4
+  orq TEMP2, RS2r
+.orcb_branch4:
+  movq $0x000000ff00000000, TEMP1
+  movq TEMP1, TEMP2
+  andq RS1, TEMP1
+  je .orcb_branch5
+  orq TEMP2, RS2r
+.orcb_branch5:
+  movq $0x0000ff0000000000, TEMP1
+  movq TEMP1, TEMP2
+  andq RS1, TEMP1
+  je .orcb_branch6
+  orq TEMP2, RS2r
+.orcb_branch6:
+  movq $0x00ff000000000000, TEMP1
+  movq TEMP1, TEMP2
+  andq RS1, TEMP1
+  je .orcb_branch7
+  orq TEMP2, RS2r
+.orcb_branch7:
+  movq $0xff00000000000000, TEMP1
+  movq TEMP1, TEMP2
+  andq RS1, TEMP1
+  je .orcb_branch8
+  orq TEMP2, RS2r
+.orcb_branch8:
+  WRITE_RD(RS2r)
   NEXT_INST
 .p2align 3
 .CKB_VM_ASM_LABEL_OP_ORN:
@@ -1583,6 +1635,41 @@ ckb_vm_x64_execute:
   NEXT_INST
 .p2align 3
 .CKB_VM_ASM_LABEL_OP_REV8:
+  DECODE_R
+  movq REGISTER_ADDRESS(RS1), RS1
+  xorq RS2r, RS2r
+  movq $0x00000000000000ff, TEMP1
+  andq RS1, TEMP1
+  shl $56, TEMP1
+  orq TEMP1, RS2r
+  movq $0x000000000000ff00, TEMP1
+  andq RS1, TEMP1
+  shl $48, TEMP1
+  orq TEMP1, RS2r
+  movq $0x0000000000ff0000, TEMP1
+  andq RS1, TEMP1
+  shl $40, TEMP1
+  orq TEMP1, RS2r
+  movq $0x00000000ff000000, TEMP1
+  andq RS1, TEMP1
+  shl $32, TEMP1
+  orq TEMP1, RS2r
+  movq $0x000000ff00000000, TEMP1
+  andq RS1, TEMP1
+  shl $24, TEMP1
+  orq TEMP1, RS2r
+  movq $0x0000ff0000000000, TEMP1
+  andq RS1, TEMP1
+  shl $16, TEMP1
+  orq TEMP1, RS2r
+  movq $0x00ff000000000000, TEMP1
+  andq RS1, TEMP1
+  shl $8, TEMP1
+  orq TEMP1, RS2r
+  movq $0xff00000000000000, TEMP1
+  andq RS1, TEMP1
+  orq TEMP1, RS2r
+  WRITE_RD(RS2r)
   NEXT_INST
 .p2align 3
 .CKB_VM_ASM_LABEL_OP_ROL:

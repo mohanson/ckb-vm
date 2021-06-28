@@ -69,6 +69,8 @@ pub trait Register:
     fn clmulh(&self, rhs: &Self) -> Self;
     // Carry-less multiply (reversed)
     fn clmulr(&self, rhs: &Self) -> Self;
+    fn orcb(&self) -> Self;
+    fn rev8(&self) -> Self;
 
     fn signed_shl(&self, rhs: &Self) -> Self;
     fn signed_shr(&self, rhs: &Self) -> Self;
@@ -310,6 +312,36 @@ impl Register for u32 {
             }
         }
         x
+    }
+
+    fn orcb(&self) -> u32 {
+        let mut rr = 0;
+        if self & 0x000000ff != 0 {
+            rr |= 0x000000ff
+        }
+        if self & 0x0000ff00 != 0 {
+            rr |= 0x0000ff00
+        }
+        if self & 0x00ff0000 != 0 {
+            rr |= 0x00ff0000
+        }
+        if self & 0xff000000 != 0 {
+            rr |= 0xff000000
+        }
+        rr
+    }
+
+    fn rev8(&self) -> u32 {
+        let mut r = 0;
+        let a = self & 0x000000ff;
+        r |= a << 24;
+        let a = self & 0x0000ff00;
+        r |= a << 16;
+        let a = self & 0x00ff0000;
+        r |= a << 8;
+        let a = self & 0xff000000;
+        r |= a;
+        r
     }
 
     fn rol(&self, rhs: &u32) -> u32 {
@@ -603,6 +635,56 @@ impl Register for u64 {
             }
         }
         x
+    }
+
+    fn orcb(&self) -> u64 {
+        let mut rr = 0;
+        if self & 0x00000000000000ff != 0 {
+            rr |= 0x00000000000000ff
+        }
+        if self & 0x000000000000ff00 != 0 {
+            rr |= 0x000000000000ff00
+        }
+        if self & 0x0000000000ff0000 != 0 {
+            rr |= 0x0000000000ff0000
+        }
+        if self & 0x00000000ff000000 != 0 {
+            rr |= 0x00000000ff000000
+        }
+        if self & 0x000000ff00000000 != 0 {
+            rr |= 0x000000ff00000000
+        }
+        if self & 0x0000ff0000000000 != 0 {
+            rr |= 0x0000ff0000000000
+        }
+        if self & 0x00ff000000000000 != 0 {
+            rr |= 0x00ff000000000000
+        }
+        if self & 0xff00000000000000 != 0 {
+            rr |= 0xff00000000000000
+        }
+        rr
+    }
+
+    fn rev8(&self) -> u64 {
+        let mut r = 0;
+        let a = self & 0x00000000000000ff;
+        r |= a << 56;
+        let a = self & 0x000000000000ff00;
+        r |= a << 48;
+        let a = self & 0x0000000000ff0000;
+        r |= a << 40;
+        let a = self & 0x00000000ff000000;
+        r |= a << 32;
+        let a = self & 0x000000ff00000000;
+        r |= a << 24;
+        let a = self & 0x0000ff0000000000;
+        r |= a << 16;
+        let a = self & 0x00ff000000000000;
+        r |= a << 8;
+        let a = self & 0xff00000000000000;
+        r |= a;
+        r
     }
 
     fn rol(&self, rhs: &u64) -> u64 {

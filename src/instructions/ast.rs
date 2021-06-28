@@ -10,6 +10,8 @@ pub enum ActionOp1 {
     Clz,
     Ctz,
     Cpop,
+    Orcb,
+    Rev8,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -320,6 +322,20 @@ impl Register for Value {
             Rc::new(self.clone()),
             Rc::new(rhs.clone()),
         )
+    }
+
+    fn orcb(&self) -> Self {
+        if let Value::Imm(imm1) = self {
+            return Value::Imm(imm1.orcb());
+        }
+        Value::Op1(ActionOp1::Orcb, Rc::new(self.clone()))
+    }
+
+    fn rev8(&self) -> Self {
+        if let Value::Imm(imm1) = self {
+            return Value::Imm(imm1.rev8());
+        }
+        Value::Op1(ActionOp1::Rev8, Rc::new(self.clone()))
     }
 
     fn rol(&self, rhs: &Value) -> Value {

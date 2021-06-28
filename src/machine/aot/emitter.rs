@@ -85,6 +85,8 @@ extern "C" {
     fn aot_clmul(c: *mut AotContext, target: u32, a: AotValue, b: AotValue) -> c_int;
     fn aot_clmulh(c: *mut AotContext, target: u32, a: AotValue, b: AotValue) -> c_int;
     fn aot_clmulr(c: *mut AotContext, target: u32, a: AotValue, b: AotValue) -> c_int;
+    fn aot_orcb(c: *mut AotContext, target: u32, a: AotValue) -> c_int;
+    fn aot_rev8(c: *mut AotContext, target: u32, a: AotValue) -> c_int;
     fn aot_rol(c: *mut AotContext, target: u32, a: AotValue, b: AotValue) -> c_int;
     fn aot_ror(c: *mut AotContext, target: u32, a: AotValue, b: AotValue) -> c_int;
     fn aot_slo(c: *mut AotContext, target: u32, a: AotValue, b: AotValue) -> c_int;
@@ -370,6 +372,12 @@ impl Emitter {
                     ActionOp1::Ctz => unsafe { aot_ctz(self.aot, target_register as u32, a_value) },
                     ActionOp1::Cpop => unsafe {
                         aot_cpop(self.aot, target_register as u32, a_value)
+                    },
+                    ActionOp1::Orcb => unsafe {
+                        aot_orcb(self.aot, target_register as u32, a_value)
+                    },
+                    ActionOp1::Rev8 => unsafe {
+                        aot_rev8(self.aot, target_register as u32, a_value)
                     },
                 };
                 check_aot_result(result)?;
