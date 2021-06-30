@@ -336,11 +336,11 @@ impl Register for u32 {
         let a = self & 0x000000ff;
         r |= a << 24;
         let a = self & 0x0000ff00;
-        r |= a << 16;
-        let a = self & 0x00ff0000;
         r |= a << 8;
+        let a = self & 0x00ff0000;
+        r |= a >> 8;
         let a = self & 0xff000000;
-        r |= a;
+        r |= a >> 24;
         r
     }
 
@@ -671,19 +671,19 @@ impl Register for u64 {
         let a = self & 0x00000000000000ff;
         r |= a << 56;
         let a = self & 0x000000000000ff00;
-        r |= a << 48;
-        let a = self & 0x0000000000ff0000;
         r |= a << 40;
-        let a = self & 0x00000000ff000000;
-        r |= a << 32;
-        let a = self & 0x000000ff00000000;
+        let a = self & 0x0000000000ff0000;
         r |= a << 24;
-        let a = self & 0x0000ff0000000000;
-        r |= a << 16;
-        let a = self & 0x00ff000000000000;
+        let a = self & 0x00000000ff000000;
         r |= a << 8;
+        let a = self & 0x000000ff00000000;
+        r |= a >> 8;
+        let a = self & 0x0000ff0000000000;
+        r |= a >> 24;
+        let a = self & 0x00ff000000000000;
+        r |= a >> 40;
         let a = self & 0xff00000000000000;
-        r |= a;
+        r |= a >> 56;
         r
     }
 

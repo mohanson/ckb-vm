@@ -11,6 +11,7 @@ pub fn execute_instruction<Mac: Machine>(
     machine: &mut Mac,
 ) -> Result<(), Error> {
     let op = extract_opcode(inst);
+    println!("{}", insts::instruction_opcode_name(op));
     match op {
         insts::OP_SUB => {
             let i = Rtype(inst);
@@ -641,7 +642,9 @@ pub fn execute_instruction<Mac: Machine>(
         insts::OP_REV8 => {
             let i = Rtype(inst);
             let rs1_value = &machine.registers()[i.rs1()];
+            println!("{:?}", rs1_value.to_u64());
             let value = rs1_value.rev8();
+            println!("{:?}", value.to_u64());
             update_register(machine, i.rd(), value);
         }
         insts::OP_ROL => {
