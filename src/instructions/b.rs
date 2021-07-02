@@ -17,7 +17,7 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
             let funct3_value = funct3(instruction_bits);
             let funct7_value = funct7(instruction_bits);
             let inst_opt = match (funct3_value, funct7_value) {
-                (0b_000, 0b_0000100) => Some(insts::OP_SLLI),
+                (0b_000, 0b_0000100) => Some(insts::OP_ADDUW),
                 (0b_001, 0b_0110000) => Some(insts::OP_ROLW),
                 (0b_010, 0b_0010000) => Some(insts::OP_SH1ADDUW),
                 (0b_100, 0b_0000100) => {
@@ -103,11 +103,11 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
                 )
             } else {
                 let inst_opt = match (funct7_value >> 1, funct3_value) {
-                    (010010, 001) => Some(insts::OP_BCLRI),
-                    (010010, 101) => Some(insts::OP_BEXTI),
-                    (011010, 001) => Some(insts::OP_BINVI),
-                    (001010, 001) => Some(insts::OP_BSETI),
-                    (011000, 101) => Some(insts::OP_RORI),
+                    (0b_010010, 0b_001) => Some(insts::OP_BCLRI),
+                    (0b_010010, 0b_101) => Some(insts::OP_BEXTI),
+                    (0b_011010, 0b_001) => Some(insts::OP_BINVI),
+                    (0b_001010, 0b_001) => Some(insts::OP_BSETI),
+                    (0b_011000, 0b_101) => Some(insts::OP_RORI),
                     _ => None,
                 };
                 inst_opt.map(|inst| {
@@ -115,7 +115,7 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
                         inst,
                         rd(instruction_bits),
                         rs1(instruction_bits),
-                        utils::x(instruction_bits, 20, 4, 0),
+                        utils::x(instruction_bits, 20, 6, 0),
                     )
                     .0
                 })
@@ -128,11 +128,11 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
 
             match funct7_value {
                 0b_0110000 => match funct3_value {
-                    001 => {
+                    0b_001 => {
                         let inst_opt = match rs2_value {
-                            00000 => Some(insts::OP_CLZW),
-                            00010 => Some(insts::OP_CPOPW),
-                            00001 => Some(insts::OP_CTZW),
+                            0b_00000 => Some(insts::OP_CLZW),
+                            0b_00010 => Some(insts::OP_CPOPW),
+                            0b_00001 => Some(insts::OP_CTZW),
                             _ => None,
                         };
                         inst_opt.map(|inst| {
@@ -140,12 +140,12 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
                                 .0
                         })
                     }
-                    101 => Some(
+                    0b_101 => Some(
                         Itype::new(
                             insts::OP_RORIW,
                             rd(instruction_bits),
                             rs1(instruction_bits),
-                            utils::x(instruction_bits, 20, 4, 0),
+                            utils::x(instruction_bits, 20, 5, 0),
                         )
                         .0,
                     ),
@@ -158,7 +158,7 @@ pub fn factory<R: Register>(instruction_bits: u32) -> Option<Instruction> {
                                 insts::OP_SLLIUW,
                                 rd(instruction_bits),
                                 rs1(instruction_bits),
-                                utils::x(instruction_bits, 20, 4, 0),
+                                utils::x(instruction_bits, 20, 5, 0),
                             )
                             .0,
                         )
